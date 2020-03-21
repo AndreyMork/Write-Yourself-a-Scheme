@@ -14,6 +14,9 @@ import Helpers
 parseExpression :: Parser LispValue
 parseExpression = parseAtom
                   <|> parseString
+                  -- in '()'
+                  <|> try parseList
+                  <|> try parseDottedList
                   -- '#' prefixed
                   <|> try parseCharacter
                   <|> try parseBool
@@ -136,5 +139,23 @@ parseFloat = do
   let result = LispFloat . getReadValue . readFloat $ floatChars
   return result
 
-parseInteger:: Parser LispValue
+parseInteger :: Parser LispValue
 parseInteger = LispInteger . read <$> many1 digit
+
+spaces1 :: Parser ()
+spaces1 = skipMany1 space
+
+parseList :: Parser LispValue
+parseList = do
+  char '('
+  values <- sepBy parseExpression spaces1
+  char ')'
+  return (LispList values)
+
+parseDottedList :: Parser LispValue
+parseDottedList = do
+  char '('
+  head <- endBy parseExpression spaces
+  tail <- char '.' >> spaces >> parseExpression
+  char ')'
+  return (LispDottedList head tail)
