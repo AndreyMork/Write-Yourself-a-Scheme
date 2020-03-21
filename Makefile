@@ -3,9 +3,10 @@
 MAKEFLAGS += --silent
 
 compile:
-	ghc Main.hs -o main.app
+	ghc -j -outputdir dist -o main.app app/*.hs
 .PHONY: compile
 
 clean:
-	rm *.{o,hi,app}
+	rm -rf dist
+	rm main.app
 .PHONY: clean
